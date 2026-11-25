@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Library Management System</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;800&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F4F5F8;--surface:#fff;--ink:#14213D;--mute:#5B6478;--line:#DCE0E8;--brand:#14213D;--on-brand:#fff;--accent:#0F766E;--gold:#E0A526;--bad:#B93A2A;--badbg:#FBE9E6;--okbg:#DDF3EF;--warnbg:#FBF1D6;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0E1424;--surface:#171F36;--ink:#E8ECF6;--mute:#9AA4BD;--line:#2A3452;--brand:#0A0F1C;--accent:#34C2B3;--bad:#FF8B7A;--badbg:#3A1F22;--okbg:#12332F;--warnbg:#3A3015;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0E1424;--surface:#171F36;--ink:#E8ECF6;--mute:#9AA4BD;--line:#2A3452;--brand:#0A0F1C;--accent:#34C2B3;--bad:#FF8B7A;--badbg:#3A1F22;--okbg:#12332F;--warnbg:#3A3015;color-scheme:dark}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 'IBM Plex Sans',system-ui,sans-serif}
+h1,h2,h3{font-family:'Bricolage Grotesque','IBM Plex Sans',sans-serif;margin:0;letter-spacing:-.01em}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.btn{background:var(--accent);color:#fff;border:0;border-radius:8px;padding:9px 16px;font-weight:600}
+.btn.alt{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.btn.bad{background:transparent;color:var(--bad);border:1px solid var(--bad)}
+.btn.sm{padding:5px 10px;font-size:13px}
+input,select{width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+label{display:block;font-size:13px;font-weight:600;color:var(--mute);margin:12px 0 4px}
+/* login */
+#login{min-height:100vh;display:grid;grid-template-columns:1.1fr 1fr}
+.hero{background:var(--brand);color:var(--on-brand);padding:48px;display:flex;flex-direction:column;justify-content:space-between;gap:32px}
+.hero h1{font-size:clamp(34px,5vw,56px);line-height:1.02;font-weight:800;max-width:11ch}
+.hero p{max-width:42ch;color:#C5CDE0;margin:16px 0 0}
+.shelf{display:flex;align-items:flex-end;gap:5px;height:190px;border-bottom:6px solid var(--gold)}
+.shelf i{display:block;width:34px;border-radius:3px 3px 0 0}
+.shelf i:nth-child(3n){transform:rotate(-6deg);transform-origin:bottom left;margin-right:10px}
+.loginbox{padding:48px;display:flex;flex-direction:column;justify-content:center;max-width:460px;width:100%;margin:auto}
+.tabs{display:flex;border:1px solid var(--line);border-radius:10px;padding:3px;gap:3px;background:var(--surface)}
+.tabs button{flex:1;border:0;background:transparent;padding:8px;border-radius:7px;font-weight:600;color:var(--mute)}
+.tabs button[aria-pressed=true]{background:var(--brand);color:var(--on-brand)}
+.demo{font-size:13px;color:var(--mute);margin-top:18px}
+.demo button{background:none;border:0;color:var(--accent);font-weight:600;padding:0;text-decoration:underline}
+.err{color:var(--bad);font-size:14px;min-height:20px;margin-top:10px}
+/* app */
+#app{display:none;min-height:100vh;grid-template-columns:230px 1fr}
+aside{background:var(--brand);color:var(--on-brand);padding:22px 14px;display:flex;flex-direction:column;gap:4px;position:sticky;top:0;height:100vh}
+aside h2{font-size:19px;padding:0 10px 14px}
+aside nav{display:flex;flex-direction:column;gap:2px}
+aside nav button{background:none;border:0;text-align:left;color:#C5CDE0;padding:9px 10px;border-radius:8px;font-weight:500}
+aside nav button[aria-current=page]{background:rgba(255,255,255,.12);color:#fff;box-shadow:inset 3px 0 var(--gold)}
+.who{margin-top:auto;font-size:13px;color:#C5CDE0;padding:10px}
+.who b{color:#fff;display:block}
+main{padding:28px;min-width:0;max-width:1100px;width:100%}
+.head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+.head h2{font-size:26px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:22px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;border-left:5px solid var(--accent)}
+.stat.warn{border-left-color:var(--bad)}
+.stat b{font:800 32px 'Bricolage Grotesque',sans-serif;display:block;line-height:1.1}
+.stat span{color:var(--mute);font-size:13px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;margin-bottom:18px}
+.panel h3{font-size:17px;margin-bottom:10px}
+.scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{text-align:left;color:var(--mute);font-weight:600;padding:8px 10px;border-bottom:2px solid var(--line);white-space:nowrap}
+td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
+td small{color:var(--mute);display:block}
+td.act{white-space:nowrap;text-align:right}
+.badge{display:inline-block;padding:2px 9px;border-radius:99px;font-size:12px;font-weight:600;background:var(--okbg);color:var(--accent)}
+.badge.bad{background:var(--badbg);color:var(--bad)}.badge.warn{background:var(--warnbg);color:var(--ink)}.badge.mute{background:var(--line);color:var(--mute)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:end}.row>*{flex:1;min-width:150px}
+.bar{height:10px;background:var(--line);border-radius:99px;overflow:hidden}.bar i{display:block;height:100%;background:var(--accent)}
+.empty{color:var(--mute);padding:18px 4px}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--brand);color:#fff;padding:10px 18px;border-radius:8px;z-index:20}
+dialog{border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink);width:min(440px,92vw);padding:20px}
+dialog::backdrop{background:rgba(0,0,0,.45)}
+@media(max-width:800px){
+ #login{grid-template-columns:1fr}.hero{padding:28px}.shelf{height:110px}.loginbox{padding:28px}
+ #app{grid-template-columns:1fr}
+ aside{position:static;height:auto;flex-direction:row;flex-wrap:wrap;align-items:center;padding:12px}
+ aside h2{padding:0 8px 0 0}aside nav{flex-direction:row;overflow-x:auto;max-width:100%}aside nav button{white-space:nowrap}
+ .who{display:none}main{padding:16px}
+}
+</style>
+</head>
+<body>
+<section id="login">
+ <div class="hero">
+  <div>
+   <h1>Every book, in its place.</h1>
+   <p>One shared catalog for issuing, returning and tracking due dates, with the right tools for admins, librarians and students.</p>
+  </div>
+  <div class="shelf" id="shelf" aria-hidden="true"></div>
+ </div>
+ <div class="loginbox">
+  <h2 style="font-size:28px;margin-bottom:16px">Sign in</h2>
+  <div class="tabs" role="group" aria-label="Role" id="roleTabs"></div>
+  <label for="u">Username</label><input id="u" autocomplete="username">
+  <label for="p">Password</label><input id="p" type="password" autocomplete="current-password">
+  <div class="err" id="lerr" role="alert"></div>
+  <button class="btn" onclick="doLogin()" style="margin-top:6px;width:100%">Sign in</button>
+  <p class="demo">Demo accounts: <button onclick="fill('admin','admin123','admin')">Admin</button> · <button onclick="fill('meena','lib123','librarian')">Librarian</button> · <button onclick="fill('sakthi','stud123','student')">Student</button></p>
+ </div>
+</section>
+
+<div id="app">
+ <aside>
+  <h2>Library</h2>
+  <nav id="nav"></nav>
+  <div class="who"><b id="whoName"></b><span id="whoRole"></span><br><button class="btn alt sm" style="margin-top:10px;color:#fff;border-color:#5b6785" onclick="logout()">Sign out</button></div>
+ </aside>
+ <main id="main"></main>
+</div>
+<dialog id="dlg"></dialog>
+<div id="toast" class="toast" hidden></div>
+
+<script>
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const iso=d=>d.toISOString().slice(0,10);
+const today=()=>iso(new Date());
+const addDays=(s,n)=>{const d=new Date(s+'T00:00:00Z');d.setUTCDate(d.getUTCDate()+n);return iso(d)};
+const diff=(a,b)=>Math.round((new Date(a+'T00:00:00Z')-new Date(b+'T00:00:00Z'))/864e5);
+const fmt=s=>new Date(s+'T00:00:00Z').toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric',timeZone:'UTC'});
+const KEY='lms-demo-v1';
+
+function seed(){
+ const t=today();
+ return{days:14,nid:100,
+ books:[
+  [1,'Introduction to Algorithms','Thomas H. Cormen','Computer Science',3],
+  [2,'Clean Code','Robert C. Martin','Software Engineering',2],
+  [3,'Eloquent JavaScript','Marijn Haverbeke','Web Development',3],
+  [4,'Learning React','Alex Banks','Web Development',2],
+  [5,'Node.js Design Patterns','Mario Casciaro','Web Development',1],
+  [6,'Database System Concepts','Abraham Silberschatz','Databases',3],
+  [7,'Computer Networks','Andrew S. Tanenbaum','Networking',2],
+  [8,'Operating System Concepts','Abraham Silberschatz','Computer Science',2],
+  [9,'Wings of Fire','A. P. J. Abdul Kalam','Biography',4],
+  [10,'The Pragmatic Programmer','Andrew Hunt','Software Engineering',1]
+ ].map(([id,title,author,cat,copies])=>({id,title,author,cat,copies})),
+ users:[
+  {id:1,name:'System Admin',username:'admin',password:'admin123',role:'admin'},
+  {id:2,name:'Meena Krishnan',username:'meena',password:'lib123',role:'librarian'},
+  {id:3,name:'Sakthidharan G',username:'sakthi',password:'stud123',role:'student'},
+  {id:4,name:'Praveen K',username:'praveen',password:'stud123',role:'student'},
+  {id:5,name:'Naveen S',username:'naveen',password:'stud123',role:'student'},
+  {id:6,name:'Sanjay R',username:'sanjay',password:'stud123',role:'student'}],
+ tx:[
+  {id:1,bookId:5,userId:3,issued:addDays(t,-20),due:addDays(t,-6),returned:null},
+  {id:2,bookId:3,userId:3,issued:addDays(t,-5),due:addDays(t,9),returned:null},
+  {id:3,bookId:1,userId:4,issued:addDays(t,-12),due:addDays(t,2),returned:null},
+  {id:4,bookId:9,userId:5,issued:addDays(t,-30),due:addDays(t,-16),returned:addDays(t,-18)},
+  {id:5,bookId:2,userId:6,issued:addDays(t,-9),due:addDays(t,5),returned:null},
+  {id:6,bookId:6,userId:3,issued:addDays(t,-40),due:addDays(t,-26),returned:addDays(t,-27)}]};
+}
+let S;
+try{S=JSON.parse(localStorage.getItem(KEY))}catch(e){}
+if(!S||!S.books)S=seed();
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+
+const ROLES={admin:'Admin',librarian:'Librarian',student:'Student'};
+const NAV={
+ admin:[['dash','Dashboard'],['catalog','Catalog'],['tx','Transactions'],['users','Users'],['reports','Reports'],['settings','Settings']],
+ librarian:[['dash','Dashboard'],['catalog','Catalog'],['issue','Issue & return'],['tx','Transactions'],['reports','Reports']],
+ student:[['dash','Dashboard'],['catalog','Search books'],['mine','My books']]};
+let me=null,view='dash',roleSel='admin',q='',filt='all';
+
+/* shelf art */
+const cols=['#E0A526','#0F766E','#C2503C','#5B7DB1','#F2E8CF','#7A5195','#2E8B57','#D9825B'];
+$('#shelf').innerHTML=Array.from({length:16},(_,i)=>`<i style="height:${95+((i*37)%85)}px;background:${cols[(i*3)%cols.length]}"></i>`).join('');
+
+/* login */
+function tabs(){$('#roleTabs').innerHTML=Object.entries(ROLES).map(([k,v])=>`<button aria-pressed="${k===roleSel}" onclick="roleSel='${k}';tabs()">${v}</button>`).join('')}
+tabs();
+function fill(u,p,r){roleSel=r;tabs();$('#u').value=u;$('#p').value=p;$('#lerr').textContent=''}
+function doLogin(){
+ const u=S.users.find(x=>x.username===$('#u').value.trim()&&x.password===$('#p').value);
+ if(!u){$('#lerr').textContent='Username or password is incorrect.';return}
+ if(u.role!==roleSel){$('#lerr').textContent=`This account is a ${ROLES[u.role]} account. Select ${ROLES[u.role]} above.`;return}
+ me=u;view='dash';$('#login').style.display='none';$('#app').style.display='grid';
+ $('#whoName').textContent=u.name;$('#whoRole').textContent=ROLES[u.role];render();
+}
+function logout(){me=null;$('#app').style.display='none';$('#login').style.display='grid';$('#p').value='';$('#lerr').textContent=''}
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&!me&&(e.target.id==='u'||e.target.id==='p'))doLogin()});
+
+/* helpers */
+const book=id=>S.books.find(b=>b.id===id)||{title:'(deleted book)',author:'',cat:'',copies:0};
+const user=id=>S.users.find(u=>u.id===id)||{name:'(removed user)'};
+const active=id=>S.tx.filter(t=>t.bookId===id&&!t.returned).length;
+const avail=b=>b.copies-active(b.id);
+const late=t=>!t.returned&&diff(today(),t.due)>0;
+function stat(t){
+ if(t.returned)return`<span class="badge mute">Returned ${fmt(t.returned)}</span>`;
+ const d=diff(today(),t.due);
+ if(d>0)return`<span class="badge bad">Overdue by ${d} day${d>1?'s':''}</span>`;
+ if(d>=-3)return`<span class="badge warn">Due ${d===0?'today':'in '+(-d)+' day'+(d<-1?'s':'')}</span>`;
+ return`<span class="badge">On loan</span>`;
+}
+function toast(m){const t=$('#toast');t.textContent=m;t.hidden=false;clearTimeout(toast.h);toast.h=setTimeout(()=>t.hidden=true,2400)}
+function go(v){view=v;q='';filt='all';render()}
+function modal(h){const d=$('#dlg');d.innerHTML=h;d.showModal()}
+const closeM=()=>$('#dlg').close();
+const tbl=(h,rows,empty)=>rows.length?`<div class="scroll"><table><thead><tr>${h.map(x=>`<th>${x}</th>`).join('')}</tr></thead><tbody>${rows.join('')}</tbody></table></div>`:`<p class="empty">${empty}</p>`;
+
+function render(){
+ if(!me)return;
+ const allowed=NAV[me.role].map(n=>n[0]);
+ if(!allowed.includes(view))view='dash'; // role restriction
+ $('#nav').innerHTML=NAV[me.role].map(([k,l])=>`<button ${k===view?'aria-current="page"':''} onclick="go('${k}')">${l}</button>`).join('');
+ $('#main').innerHTML=VIEWS[view]();
+ if(view==='catalog')list();
+}
+
+const staff=()=>me.role!=='student';
+const loanRow=(t,withUser,ret)=>`<tr><td>${esc(book(t.bookId).title)}<small>${esc(book(t.bookId).author)}</small></td>${withUser?`<td>${esc(user(t.userId).name)}</td>`:''}<td>${fmt(t.issued)}</td><td>${fmt(t.due)}</td><td>${stat(t)}</td>${ret?`<td class="act">${t.returned?'':`<button class="btn sm" onclick="returnBook(${t.id})">Mark returned</button>`}</td>`:''}</tr>`;
+
+const VIEWS={
+ dash(){
+  if(me.role==='student'){
+   const mine=S.tx.filter(t=>t.userId===me.id),on=mine.filter(t=>!t.returned);
+   return`<div class="head"><h2>Hello, ${esc(me.name.split(' ')[0])}</h2></div>
+   <div class="stats"><div class="stat"><b>${on.length}</b><span>Books borrowed</span></div>
+   <div class="stat ${on.filter(late).length?'warn':''}"><b>${on.filter(late).length}</b><span>Overdue</span></div>
+   <div class="stat"><b>${mine.filter(t=>t.returned).length}</b><span>Returned in total</span></div></div>
+   <div class="panel"><h3>Currently borrowed</h3>${tbl(['Book','Issued','Due','Status'],on.map(t=>loanRow(t,false,false).replace(/^<tr>(.*?)<\/td>/,'<tr>$1</td>')),'You have no borrowed books. Search the catalog to find one.')}</div>`;
+  }
+  const on=S.tx.filter(t=>!t.returned),od=on.filter(late),copies=S.books.reduce((a,b)=>a+b.copies,0);
+  return`<div class="head"><h2>Dashboard</h2></div>
+  <div class="stats"><div class="stat"><b>${S.books.length}</b><span>Book titles</span></div>
+  <div class="stat"><b>${copies-on.length}</b><span>Copies available</span></div>
+  <div class="stat"><b>${on.length}</b><span>Copies on loan</span></div>
+  <div class="stat ${od.length?'warn':''}"><b>${od.length}</b><span>Overdue</span></div></div>
+  <div class="panel"><h3>Overdue books</h3>${tbl(['Book','Borrower','Issued','Due','Status'],od.map(t=>loanRow(t,true,false)),'No overdue books right now.')}</div>
+  <div class="panel"><h3>Recent transactions</h3>${tbl(['Book','Borrower','Issued','Due','Status'],S.tx.slice().reverse().slice(0,5).map(t=>loanRow(t,true,false)),'No transactions yet.')}</div>`;
+ },
+ catalog(){
+  const cats=[...new Set(S.books.map(b=>b.cat))];
+  return`<div class="head"><h2>${staff()?'Book catalog':'Search books'}</h2>${staff()?`<button class="btn" onclick="bookForm()">Add book</button>`:''}</div>
+  <div class="panel"><div class="row"><div><label for="q">Search by title, author or category</label><input id="q" oninput="q=this.value;list()" placeholder="e.g. React"></div>
+  <div style="max-width:200px"><label for="f">Show</label><select id="f" onchange="filt=this.value;list()"><option value="all">All books</option><option value="in">Available only</option></select></div></div></div>
+  <div class="panel" id="list"></div>`;
+ },
+ issue(){
+  const av=S.books.filter(b=>avail(b)>0),st=S.users.filter(u=>u.role==='student'),on=S.tx.filter(t=>!t.returned);
+  return`<div class="head"><h2>Issue & return</h2></div>
+  <div class="panel"><h3>Issue a book</h3><div class="row">
+  <div><label for="ib">Book</label><select id="ib">${av.map(b=>`<option value="${b.id}">${esc(b.title)} (${avail(b)} left)</option>`).join('')}</select></div>
+  <div><label for="iu">Student</label><select id="iu">${st.map(u=>`<option value="${u.id}">${esc(u.name)}</option>`).join('')}</select></div>
+  <div style="flex:0 0 auto;min-width:0"><button class="btn" onclick="issueBook()">Issue book</button></div></div>
+  <p style="color:var(--mute);font-size:13px;margin:10px 0 0">Loan period: ${S.days} days. Due date is set automatically.</p></div>
+  <div class="panel"><h3>Books on loan</h3>${tbl(['Book','Borrower','Issued','Due','Status',''],on.map(t=>loanRow(t,true,true)),'No books are on loan.')}</div>`;
+ },
+ tx(){
+  return`<div class="head"><h2>Transactions</h2></div><div class="panel"><div style="max-width:220px"><label for="tf">Show</label><select id="tf" onchange="filt=this.value;$('#txl').innerHTML=txList()"><option value="all">All</option><option value="on">On loan</option><option value="od">Overdue</option></select></div></div>
+  <div class="panel" id="txl">${txList()}</div>`;
+ },
+ mine(){
+  const mine=S.tx.filter(t=>t.userId===me.id).reverse();
+  return`<div class="head"><h2>My books</h2></div><div class="panel">${tbl(['Book','Issued','Due','Status'],mine.map(t=>loanRow(t,false,false)),'You have not borrowed any books yet.')}</div>`;
+ },
+ users(){
+  return`<div class="head"><h2>Users</h2><button class="btn" onclick="userForm()">Add user</button></div>
+  <div class="panel">${tbl(['Name','Username','Role',''],S.users.map(u=>`<tr><td>${esc(u.name)}</td><td>${esc(u.username)}</td><td><span class="badge ${u.role==='student'?'mute':''}">${ROLES[u.role]}</span></td><td class="act">${u.id===me.id?'':`<button class="btn bad sm" onclick="delUser(${u.id})">Remove</button>`}</td></tr>`),'No users.')}</div>`;
+ },
+ reports(){
+  const cats=[...new Set(S.books.map(b=>b.cat))],on=S.tx.filter(t=>!t.returned),cut=addDays(today(),-30);
+  return`<div class="head"><h2>Reports</h2></div>
+  <div class="stats"><div class="stat"><b>${S.tx.filter(t=>t.issued>=cut).length}</b><span>Issued in last 30 days</span></div>
+  <div class="stat"><b>${S.tx.filter(t=>t.returned&&t.returned>=cut).length}</b><span>Returned in last 30 days</span></div>
+  <div class="stat ${on.filter(late).length?'warn':''}"><b>${on.filter(late).length}</b><span>Overdue now</span></div></div>
+  <div class="panel"><h3>Inventory by category</h3>${tbl(['Category','Titles','Copies','On loan','Usage'],cats.map(c=>{const bs=S.books.filter(b=>b.cat===c),cp=bs.reduce((a,b)=>a+b.copies,0),ln=bs.reduce((a,b)=>a+active(b.id),0);return`<tr><td>${esc(c)}</td><td>${bs.length}</td><td>${cp}</td><td>${ln}</td><td style="min-width:120px"><div class="bar"><i style="width:${cp?ln/cp*100:0}%"></i></div></td></tr>`}),'No books.')}</div>
+  <div class="panel"><h3>Most borrowed titles</h3>${tbl(['Book','Times issued'],S.books.map(b=>[b,S.tx.filter(t=>t.bookId===b.id).length]).filter(x=>x[1]).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([b,n])=>`<tr><td>${esc(b.title)}</td><td>${n}</td></tr>`),'No borrowing yet.')}</div>`;
+ },
+ settings(){
+  return`<div class="head"><h2>System settings</h2></div><div class="panel" style="max-width:420px"><h3>Loan period</h3>
+  <label for="sd">Days a book can be borrowed</label><input id="sd" type="number" min="1" max="90" value="${S.days}">
+  <button class="btn" style="margin-top:12px" onclick="S.days=Math.max(1,Math.min(90,+$('#sd').value||14));save();toast('Settings saved')">Save settings</button></div>
+  <div class="panel" style="max-width:420px"><h3>Demo data</h3><p style="color:var(--mute);margin-top:0">Restore the sample books, users and transactions.</p><button class="btn bad" onclick="if(confirm('Reset all data to the sample set?')){S=seed();save();render();toast('Data reset')}">Reset demo data</button></div>`;
+ }
+};
+
+function txList(){
+ let r=S.tx.slice().reverse();
+ if(filt==='on')r=r.filter(t=>!t.returned);if(filt==='od')r=r.filter(late);
+ return tbl(['Book','Borrower','Issued','Due','Status'],r.map(t=>loanRow(t,true,false)),'No matching transactions.');
+}
+function list(){
+ const s=q.toLowerCase();
+ const r=S.books.filter(b=>(b.title+b.author+b.cat).toLowerCase().includes(s)&&(filt!=='in'||avail(b)>0));
+ $('#list').innerHTML=tbl(['Title','Category','Availability',staff()?'':null].filter(x=>x!==null),r.map(b=>{const a=avail(b);
+  return`<tr><td>${esc(b.title)}<small>${esc(b.author)}</small></td><td>${esc(b.cat)}</td><td><span class="badge ${a?'':'bad'}">${a?`${a} of ${b.copies} available`:'All copies on loan'}</span></td>${staff()?`<td class="act"><button class="btn alt sm" onclick="bookForm(${b.id})">Edit</button> <button class="btn bad sm" onclick="delBook(${b.id})">Delete</button></td>`:''}</tr>`}),'No books match your search. Try a different title or author.');
+}
+
+/* actions */
+function bookForm(id){
+ const b=id?book(id):{title:'',author:'',cat:'',copies:1};
+ modal(`<h3>${id?'Edit book':'Add book'}</h3>
+ <label for="bt">Title</label><input id="bt" value="${esc(b.title)}"><label for="ba">Author</label><input id="ba" value="${esc(b.author)}">
+ <label for="bc">Category</label><input id="bc" value="${esc(b.cat)}"><label for="bn">Copies</label><input id="bn" type="number" min="1" value="${b.copies}">
+ <div style="display:flex;gap:8px;margin-top:16px;justify-content:flex-end"><button class="btn alt" onclick="closeM()">Cancel</button><button class="btn" onclick="saveBook(${id||0})">Save book</button></div>`);
+}
+function saveBook(id){
+ const v={title:$('#bt').value.trim(),author:$('#ba').value.trim(),cat:$('#bc').value.trim()||'General',copies:Math.max(1,+$('#bn').value||1)};
+ if(!v.title||!v.author){toast('Enter a title and an author');return}
+ if(id){const b=book(id);if(v.copies<active(id)){toast(`${active(id)} copies are on loan; copies can’t go below that`);return}Object.assign(b,v)}
+ else S.books.push({id:++S.nid,...v});
+ save();closeM();render();toast('Book saved');
+}
+function delBook(id){
+ if(active(id)){toast('This book is on loan. Return it before deleting.');return}
+ if(confirm('Delete this book record?')){S.books=S.books.filter(b=>b.id!==id);save();render();toast('Book deleted')}
+}
+function issueBook(){
+ const b=+$('#ib').value,u=+$('#iu').value;
+ if(!b||!u){toast('No available book or student to issue');return}
+ S.tx.push({id:++S.nid,bookId:b,userId:u,issued:today(),due:addDays(today(),S.days),returned:null});
+ save();render();toast('Book issued. Due '+fmt(addDays(today(),S.days)));
+}
+function returnBook(id){S.tx.find(t=>t.id===id).returned=today();save();render();toast('Book returned. Availability updated')}
+function userForm(){
+ modal(`<h3>Add user</h3><label for="nn">Full name</label><input id="nn"><label for="nu">Username</label><input id="nu">
+ <label for="np">Password</label><input id="np" type="password"><label for="nr">Role</label><select id="nr"><option value="student">Student</option><option value="librarian">Librarian</option><option value="admin">Admin</option></select>
+ <div style="display:flex;gap:8px;margin-top:16px;justify-content:flex-end"><button class="btn alt" onclick="closeM()">Cancel</button><button class="btn" onclick="saveUser()">Add user</button></div>`);
+}
+function saveUser(){
+ const n=$('#nn').value.trim(),u=$('#nu').value.trim(),p=$('#np').value;
+ if(!n||!u||p.length<4){toast('Enter a name, username and a password of 4+ characters');return}
+ if(S.users.some(x=>x.username===u)){toast('That username is taken');return}
+ S.users.push({id:++S.nid,name:n,username:u,password:p,role:$('#nr').value});save();closeM();render();toast('User added');
+}
+function delUser(id){
+ if(S.tx.some(t=>t.userId===id&&!t.returned)){toast('This user still has books on loan');return}
+ if(confirm('Remove this user?')){S.users=S.users.filter(u=>u.id!==id);save();render();toast('User removed')}
+}
+</script>
+</body>
+</html>
